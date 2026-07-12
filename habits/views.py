@@ -1,21 +1,16 @@
-from rest_framework import viewsets, generics, request
-from rest_framework.permissions import BasePermission, SAFE_METHODS, IsAuthenticated
+from rest_framework import viewsets, generics
+from rest_framework.permissions import IsAuthenticated
 from habits.models import Habit
 from habits.serializers import HabitSerializer
 from habits.paginators import PageNumberPagination, HabitPagination
+from habits.permissions import IsOwnerOrReadOnly
 
-
-class IsOwnerOrReadOnly(BasePermission):
-    def has_object_permission(self, request, view, obj):
-        if request.method in SAFE_METHODS and obj.is_public:
-            return True
-        return obj.user == request.user
 
 class HabitViewSet(viewsets.ModelViewSet):
     """CRUD для пользователя"""
     queryset = Habit.objects.all()
     serializer_class = HabitSerializer
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrReadOnly]
     pagination_class = PageNumberPagination
 
     def get_queryset(self):

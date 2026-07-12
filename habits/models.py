@@ -1,3 +1,4 @@
+from django.contrib.admin import action
 from django.db import models
 from django.conf import settings
 
@@ -74,3 +75,9 @@ class Habit(models.Model):
         default=False,
     )
 
+    class Meta:
+        verbose_name = "Привычка"
+        verbose_name_plural = "Привычки"
+
+    def __str__(self):
+        return f"{self.user} - {self.action}"

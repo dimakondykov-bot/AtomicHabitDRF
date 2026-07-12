@@ -3,7 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
-    user = None
+    username = None
     email = models.EmailField(max_length=255, unique=True)
 
     telegram_chat_id = models.CharField(
