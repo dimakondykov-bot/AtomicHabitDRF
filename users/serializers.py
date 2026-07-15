@@ -2,6 +2,7 @@ import attrs
 from django.contrib.auth import authenticate
 from rest_framework import serializers
 
+import users
 from users.models import User
 
 
@@ -22,3 +23,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'password')
         extra_kwargs = {"password": {"write_only": True}}
+
+
+class LinkTelegramSerializer(serializers.ModelSerializer):
+    # Привязываем кастомное имя поля к реальному полю в БД 'tg_chat_id'
+    telegram_chat_id = serializers.IntegerField(source='tg_chat_id')
+
+    class Meta:
+        model = User
+        # Использован список [], чтобы точно избежать синтаксической ошибки в будущем
+        fields = ['telegram_chat_id']

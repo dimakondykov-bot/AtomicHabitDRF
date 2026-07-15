@@ -3,6 +3,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 class User(AbstractUser):
+    id = None
     username = None
     email = models.EmailField(max_length=255, unique=True)
 
