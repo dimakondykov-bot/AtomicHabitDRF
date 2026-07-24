@@ -105,9 +105,10 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-
+# настройки статики
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+STATIC_ROOT = os.path.join(BASE_DIR,"staticfiles")
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
 CELERY_RESULT_BACKEND = os.getenv("CELERY_RESULT_BACKEND")
@@ -126,4 +127,9 @@ CELERY_BEAT_SCHEDULE = {
 
 TELEGRAM_TOKEN_TG = os.getenv('TELEGRAM_TOKEN_TG')
 
-
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.dummy.DummyCache',
+        'LOCATION': 'redis://redis:6379/1',
+    }
+}

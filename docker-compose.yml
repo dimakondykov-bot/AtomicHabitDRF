@@ -9,14 +9,33 @@ services:
       - static_volume:/app/static
     ports:
       - "8000:8000"
+      -
+    # сервис зависит от БД и redis
     depends_on:
-      db:
-        condition: service_healthy
+      - db
+      - redis
+      -
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx.conf
+      - static_volume:app/staticfoles
+    # указываем что nginx зависит от сервисов web
+    depends_on:
+      - web
 
   redis:
-    image: redis:7-alpine
+    image: redis:7
     ports:
       - "6379:6379"
+    # том для хранения файлов redis
+    volumes:
+      - redis_date:/date
+    env_file:
+      - ./.env
   celery:
     build: .
     command:
@@ -29,7 +48,7 @@ services:
       - redis
       - db
   db:
-    image: postgres:15-alpine
+    image: postgres:16
     env_file:
       - .env
     expose:
@@ -44,6 +63,8 @@ services:
       timeout: 5s
       retries: 5
 
+# объявляем тома для сохранения данных между перезапусками
 volumes:
   postgres_data:
   static_volume:
+  redis_date:
