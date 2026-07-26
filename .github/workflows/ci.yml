@@ -95,7 +95,7 @@ jobs:
 
       - name: Deploy to server # подключаемся к серверу и деплоем через докер
         run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}${{ secrets.SERVER_IP }} << 'EOF' 
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF' 
             # Переход в папку проекта на сервере, где лежит docker-compose.yml
           cd ${{ secrets.DEPLOY_DIR }}
           
