@@ -27,6 +27,8 @@ jobs:
   test:
     needs: lint # Запуск тестов. Тесты запускаются только после успешного прохождения линтеров
     runs-on: ubuntu-latest
+    env:
+      SECRET_KEY: "temporary_secret_key_for_github_actions_testing"
 
     steps:
       - name: Check out code # получение коди из репозитория
