@@ -22,7 +22,7 @@ jobs:
           pip install flake8
 
       - name: Run flake8 # запуск проверки кода через flake8
-        run: flake8 . --exclude=.venv,venv,git,__pycache__,*migrations* --max-lina-length=120
+        run: flake8 . --exclude=.venv,venv,.git,__pycache__,*migrations* --max-line-length=120
 
   test:
     needs: lint # Запуск тестов. Тесты запускаются только после успешного прохождения линтеров
