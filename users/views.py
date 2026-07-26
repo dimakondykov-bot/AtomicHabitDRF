@@ -18,18 +18,19 @@ class UserRegisterApiView(generics.CreateAPIView):
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+
 class LinkTelegramAPIView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = LinkTelegramSerializer
     permission_classes = [permissions.IsAuthenticated]
+
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
         serializer.is_valid(raise_exception=True)
         data = serializer.validated_data
 
         user = request.user
-        user.telegram_id = data.get('chat_id')
+        user.telegram_id = data.get("chat_id")
         user.save()
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
-

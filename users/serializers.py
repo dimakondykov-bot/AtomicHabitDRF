@@ -1,8 +1,5 @@
-import attrs
-from django.contrib.auth import authenticate
 from rest_framework import serializers
 
-import users
 from users.models import User
 
 
@@ -21,13 +18,13 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('email', 'password')
+        fields = ("email", "password")
         extra_kwargs = {"password": {"write_only": True}}
 
 
 class LinkTelegramSerializer(serializers.ModelSerializer):
-    telegram_chat_id = serializers.IntegerField(source='tg_chat_id')
+    telegram_chat_id = serializers.IntegerField(source="tg_chat_id")
 
     class Meta:
         model = User
-        fields = ['telegram_chat_id']
+        fields = ["telegram_chat_id"]

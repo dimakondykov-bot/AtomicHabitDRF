@@ -1,20 +1,41 @@
-name: Django CI
 
+                                # Коментарии пишу для себя, чтоб запомнить
+name: Django CI
 
 on: [push, pull_request]
 
 jobs:
+  lint: # проверка кода линтором
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code # получение коди из репозитория
+        uses : actions/checkout@v3
+
+      - name: Set up Python # установка пайтон нужной версии
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.12'
+
+      - name: Install flake8 # установка flake8 для проверки кода
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+
+      - name: Run flake8 # запуск проверки кода через flake8
+        run: flake8 . --exclude=.venv,venv,git,__pycache__,*migrations* --max-lina-length=120
+
   test:
+    needs: lint # Запуск тестов. Тесты запускаются только после успешного прохождения линтеров
     runs-on: ubuntu-latest
 
     steps:
-      - name: Check out code
+      - name: Check out code # получение коди из репозитория
         uses: actions/checkout@v3
 
-      - name: Set up python
+      - name: Set up python # установка пайтон нужной версии
         uses: actions/setup-python@v4
         with:
-          python-version: '3-12'
+          python-version: '3.12'
 
       - name: Cache pip
         uses: actions/cache@v3
@@ -23,7 +44,7 @@ jobs:
           key: ${{ runner.os }} -pip-${{ hashFiles('**/requirements.txt')}}
           restore-keys: ${{ runner.os }}-pip_
 
-      - name: Install dependencies
+      - name: Install dependencies # устанавливаем зависимости проекта
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
@@ -33,3 +54,55 @@ jobs:
 
       - name: Run tests
         run: python manage.py test
+
+  build: #  сборка докер образа
+    needs: test # будет запускаться только после прохождения всех тестов
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out code # получение коди из репозитория
+        uses: actions/checkout@v3
+
+      - name: Log in in Docker hub # авторизуемся в dockerhub используя секреты
+        run: echo ${{ secrets.DOCKER_HUB_ACCEES_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+
+      - name: build docker image # собираем docker образ на основе последнего комита
+        run: docker build -t ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }} .
+
+      - name: Push Docker image in Docker hub #  отправляем собранный образ в docker hub
+        run: docker push ${{secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }}
+
+  deploy:
+    needs: build #  деплоим тольео после успешной сборки докер образа
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Set up SSH #  настраиваем SSH для подключения к серверу
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_KEY }}
+
+      - name: Deploy to server # подключаемся к серверу и деплоем через докер
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}${{ secrets.SERVER_IP }} << 'EOF' 
+            # Переход в папку проекта на сервере, где лежит docker-compose.yml
+          cd ${{ secrets.DEPLOY_DIR }}
+          
+            # Подгружаю последние изменения из репозитория
+          git pull origin ${{ github.ref_name }}
+          
+            # Авторизация сервера в Docker Hub чтобы скачать образ
+          echo ${{ secrets.DOCKER_HUB_ACCEES_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
+            
+            # Скачиваем обновленный образ приложения
+          docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }} 
+               
+            # Перезапускаем всю связку контейнеров - Django, Nginx, Redis, Celery в фоновом режиме
+          docker-compose down
+          
+            # Флаг --build заставит Nginx пересобрать свой контейнер, если обновился nginx.conf
+          docker-compose up -d --build
+            
+            # Очищаем старые неиспользуемые Docker-образы, чтобы не забивать диск сервера
+          docker image prune -f
+          EOF

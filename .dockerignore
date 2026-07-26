@@ -1,0 +1,7 @@
+.gitignore
+.git
+.env
+.venv
+__pycache__
+*.pyc
+tsst_db.sqlite3

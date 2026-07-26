@@ -11,13 +11,13 @@ class User(AbstractUser):
         max_length=255,
         blank=True,
         null=True,
-        verbose_name='Telegram Chat ID',
-        help_text='Введите  ID  чата в телеграмм',
+        verbose_name="Telegram Chat ID",
+        help_text="Введите  ID  чата в телеграмм",
     )
 
-    USERNAME_FIELD = 'email'
+    USERNAME_FIELD = "email"
     REQUIRED_FIELDS = []
 
     class Meta:
-        verbose_name = 'Пользователь'
-        verbose_name_plural = 'Пользователи'
+        verbose_name = "Пользователь"
+        verbose_name_plural = "Пользователи"

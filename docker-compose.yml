@@ -1,52 +1,6 @@
-services:
-  web:
-    build: .
-    command: python manage.py runserver 0.0.0.0:8000
-    env_file:
-      - .env
-    volumes:
-      - .:/app
-      - static_volume:/app/static
-    ports:
-      - "8000:8000"
-      -
-    # сервис зависит от БД и redis
-    depends_on:
-      - db
-      - redis
-      -
-  nginx:
-    build:
-      context: ./nginx
-    ports:
-      - "80:80"
-    volumes:
-      - ./nginx/nginx.conf:/etc/nginx.conf
-      - static_volume:app/staticfoles
-    # указываем что nginx зависит от сервисов web
-    depends_on:
-      - web
+version: '3.8'
 
-  redis:
-    image: redis:7
-    ports:
-      - "6379:6379"
-    # том для хранения файлов redis
-    volumes:
-      - redis_date:/date
-    env_file:
-      - ./.env
-  celery:
-    build: .
-    command:
-      - celery -A config worker --loglevel-info
-    volumes:
-      - .:/app
-    env_file:
-      - .env
-    depends_on:
-      - redis
-      - db
+services:
   db:
     image: postgres:16
     env_file:
@@ -57,14 +11,67 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    healthcheck:
+    healthcheck: # Проверка здоровья: база сообщает, когда она полностью включилась и готова к работе
       test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB"]
       interval: 10s
       timeout: 5s
       retries: 5
 
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    # том для хранения файлов redis
+    volumes:
+      - redis_data:/data
+    env_file:
+      - ./.env
+
+  web:
+    build: .
+    # Запускаем gunicorn для Django
+    command: gunicorn --bind 0.0.0.0:8000 config.wsgi:application
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    # сервис зависит от БД и redis
+    depends_on:
+      db:
+        condition: service_healthy # Django включится только ТОГДА, когда база подтвердит, что она «здорова»
+      redis:
+        condition: service_started
+
+  celery:
+    build: .
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+
+
+  nginx:
+    build:
+      context: ./nginx/Dockerfile
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles:ro
+    # указываем что nginx зависит от сервисов web
+    depends_on:
+      - web
+
+
 # объявляем тома для сохранения данных между перезапусками
 volumes:
   postgres_data:
   static_volume:
-  redis_date:
+  redis_data:

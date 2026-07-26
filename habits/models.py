@@ -1,4 +1,3 @@
-from django.contrib.admin import action
 from django.db import models
 from django.conf import settings
 
@@ -15,8 +14,8 @@ class Habit(models.Model):
         max_length=100,
         null=True,
         blank=True,
-        verbose_name='Место',
-        help_text='Введите место привычки',
+        verbose_name="Место",
+        help_text="Введите место привычки",
     )
 
     time = models.TimeField(
@@ -45,7 +44,7 @@ class Habit(models.Model):
         blank=True,
         verbose_name="Связанная привычка",
         help_text="Опишите связанную с привычку с приятной",
-        )
+    )
 
     periodicity = models.IntegerField(
         default=1,
