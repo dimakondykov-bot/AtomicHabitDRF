@@ -114,6 +114,10 @@ jobs:
             # Флаг --build заставит Nginx пересобрать свой контейнер, если обновился nginx.conf
           docker compose up -d --build
           
+          docker compose ps
+          docker compose logs nginx
+          
             # Очищаем старые неиспользуемые Docker-образы, чтобы не забивать диск сервера
           docker image prune -f
+                              
           EOF
