@@ -99,6 +99,7 @@ jobs:
             # Переход в папку проекта на сервере, где лежит docker-compose.yml
           cd ${{ secrets.DEPLOY_DIR }}
           
+           # временные 
           pwd
           ls -la
           
