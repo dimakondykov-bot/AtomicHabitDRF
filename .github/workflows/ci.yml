@@ -96,32 +96,24 @@ jobs:
       - name: Deploy to server # подключаемся к серверу и деплоем через докер
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SSH_USER }}@${{ secrets.SERVER_IP }} << 'EOF' 
-            # Переход в папку проекта на сервере, где лежит docker-compose.yml
           cd ${{ secrets.DEPLOY_DIR }}
           
-           # временные 
-          pwd
-          ls -la
-          
-            # Подгружаю последние изменения из репозитория
           git pull origin ${{ github.ref_name }}
           
-            # Авторизация сервера в Docker Hub чтобы скачать образ
           echo ${{ secrets.DOCKER_HUB_ACCEES_TOKEN }} | docker login -u ${{ secrets.DOCKER_HUB_USERNAME }} --password-stdin
           
-            # Скачиваем обновленный образ приложения
+          # 1. Скачиваем образ
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }} 
           
-            # Перезапускаем всю связку контейнеров - Django, Nginx, Redis, Celery в фоновом режиме
+          # 2. Передаем TAG внутрь docker-compose при перезапуске
+          export TAG=${{ github.sha }}
+          export DOCKER_USER=${{ secrets.DOCKER_HUB_USERNAME }}
+          
           docker-compose down
           
-            # Флаг --build заставит Nginx пересобрать свой контейнер, если обновился nginx.conf
+          # Теперь compose подставит эти переменные
           docker-compose up -d --build
           
           docker-compose ps
-          docker-compose logs nginx
-          
-            # Очищаем старые неиспользуемые Docker-образы, чтобы не забивать диск сервера
           docker image prune -f
-                              
           EOF
