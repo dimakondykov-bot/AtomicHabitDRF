@@ -16,6 +16,7 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    restart: unless-stopped
 
   redis:
     image: redis:7
@@ -26,6 +27,7 @@ services:
       - redis_data:/data
     env_file:
       - ./.env
+    restart: unless-stopped
 
   web:
     build: .
@@ -44,6 +46,7 @@ services:
         condition: service_healthy # Django включится только ТОГДА, когда база подтвердит, что она «здорова»
       redis:
         condition: service_started
+    restart: unless-stopped
 
   celery:
     build: .
@@ -55,11 +58,11 @@ services:
     depends_on:
       - redis
       - db
-
+    restart: unless-stopped
 
   nginx:
     build:
-      context: ./nginx/Dockerfile
+      context: ./nginx
     ports:
       - "80:80"
     volumes:
@@ -68,6 +71,19 @@ services:
     # указываем что nginx зависит от сервисов web
     depends_on:
       - web
+    restart: unless-stopped
+
+  celery-beat:
+    build: .
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
 
 
 # объявляем тома для сохранения данных между перезапусками

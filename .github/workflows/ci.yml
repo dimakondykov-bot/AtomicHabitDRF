@@ -109,10 +109,10 @@ jobs:
           docker pull ${{ secrets.DOCKER_HUB_USERNAME }}/myapp:${{ github.sha }} 
           
             # Перезапускаем всю связку контейнеров - Django, Nginx, Redis, Celery в фоновом режиме
-          docker-compose down
+          docker compose down
           
             # Флаг --build заставит Nginx пересобрать свой контейнер, если обновился nginx.conf
-          docker-compose up -d --build
+          docker compose up -d --build
           
             # Очищаем старые неиспользуемые Docker-образы, чтобы не забивать диск сервера
           docker image prune -f
