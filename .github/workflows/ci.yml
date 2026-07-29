@@ -99,6 +99,9 @@ jobs:
             # Переход в папку проекта на сервере, где лежит docker-compose.yml
           cd ${{ secrets.DEPLOY_DIR }}
           
+          pwd
+          ls -la
+          
             # Подгружаю последние изменения из репозитория
           git pull origin ${{ github.ref_name }}
           
