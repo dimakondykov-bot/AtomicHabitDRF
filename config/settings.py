@@ -43,7 +43,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:8000",
     "http://127.0.0.1:8000",
     "https://myfrontend.com",
-    "http://158.160.204.163"
+    "http://158.160.204.163",
+    "http://django"
 ]
 
 ROOT_URLCONF = "config.urls"
