@@ -9,7 +9,7 @@ load_dotenv(os.path.join(BASE_DIR, ".env"))
 
 SECRET_KEY = os.getenv("SECRET_KEY")
 DEBUG = True
-ALLOWED_HOSTS = ["158.160.204.163", "localhost", "127.0.0.1"]
+ALLOWED_HOSTS = ["158.160.204.163", "django", "localhost", "127.0.0.1", "testserver"]
 
 
 INSTALLED_APPS = [
@@ -39,15 +39,14 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
+CORS_ALLOW_ALL_ORIGINS = True
 CORS_ALLOWED_ORIGINS = [
-    "*"
-    # "http://localhost:8000",
-    # "http://127.0.0.1:8000",
-    # "https://myfrontend.com",
-    # "http://158.160.204.163",
-    # "http://django"
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+    "https://myfrontend.com",
+    "http://158.160.204.163",
 ]
-CORS_ORIGIN_ALLOW_ALL = True
+
 
 ROOT_URLCONF = "config.urls"
 
