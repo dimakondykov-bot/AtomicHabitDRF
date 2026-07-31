@@ -7,10 +7,9 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 load_dotenv(os.path.join(BASE_DIR, ".env"))
 
-SECRET_KEY = os.getenv("SECRET_KEY")
-DEBUG = True
-# ALLOWED_HOSTS = ["158.160.204.163", "django", "localhost", "127.0.0.1", "testserver"]
-ALLOWED_HOSTS = []
+SECRET_KEY = os.getenv("SECRET_KEY", "django-insecure-dev-key-for-build-only")
+DEBUG = os.getenv("DEBUG", "False") == "True"
+ALLOWED_HOSTS = os.getenv("ALLOWED_HOSTS", "localhost,127.0.0.1,web").split(",")
 
 
 INSTALLED_APPS = [
@@ -104,7 +103,7 @@ USE_TZ = True
 
 # настройки статики
 STATIC_URL = "static/"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
+# STATICFILES_DIRS = [os.path.join(BASE_DIR, "staticfiles")]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
