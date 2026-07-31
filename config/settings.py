@@ -40,12 +40,6 @@ MIDDLEWARE = [
 ]
 
 CORS_ALLOW_ALL_ORIGINS = True
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:8000",
-    "http://127.0.0.1:8000",
-    "https://myfrontend.com",
-    "http://158.160.204.163",
-]
 
 
 ROOT_URLCONF = "config.urls"
@@ -109,7 +103,6 @@ USE_TZ = True
 
 # настройки статики
 STATIC_URL = "static/"
-STATICFILES_DIRS = [os.path.join(BASE_DIR, "static")]
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 CELERY_BROKER_URL = os.getenv("CELERY_BROKER_URL")
