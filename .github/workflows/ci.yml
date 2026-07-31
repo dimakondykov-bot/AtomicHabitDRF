@@ -114,6 +114,10 @@ jobs:
           # Теперь compose подставит эти переменные
           docker-compose up -d --build
           
+          # 3. Автоматически запускаем миграции внутри контейнера 'web' сразу после запуска сайта
+          docker-compose exec -T web python manage.py migrate
+          
           docker-compose ps
           docker image prune -f
           EOF
+
