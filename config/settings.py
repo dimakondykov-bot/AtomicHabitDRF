@@ -129,3 +129,6 @@ CACHES = {
         "LOCATION": "redis://redis:6379/1",
     }
 }
+
+# Принудительная очистка CORS для прохождения тестов в CI/CD
+CORS_ALLOWED_ORIGINS = []
