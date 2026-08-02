@@ -1,0 +1,91 @@
+version: '3.8'
+
+services:
+  db:
+    image: postgres:15-alpine
+    env_file:
+      - .env
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck: # Проверка здоровья: база сообщает, когда она полностью включилась и готова к работе
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7
+    ports:
+      - "6379:6379"
+    # том для хранения файлов redis
+    volumes:
+      - redis_data:/data
+    env_file:
+      - ./.env
+    restart: unless-stopped
+
+  web:
+    build: .
+    # Запускаем миграции, собираем статику и затем gunicorn для Django
+    command: sh -c "python manage.py migrate && python manage.py collectstatic --no-input && gunicorn --bind 0.0.0.0:8000 config.wsgi:application"
+    env_file:
+      - .env
+    volumes:
+      - .:/app
+      - static_volume:/app/staticfiles
+    ports:
+      - "8000:8000"
+    # сервис зависит от БД и redis
+    depends_on:
+      db:
+        condition: service_healthy # Django включится только ТОГДА, когда база подтвердит, что она «здорова»
+      redis:
+        condition: service_started
+    restart: unless-stopped
+
+  celery:
+    build: .
+    command: celery -A config worker --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+
+  nginx:
+    build:
+      context: ./nginx
+    ports:
+      - "80:80"
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+      - static_volume:/app/staticfiles:ro
+    # указываем что nginx зависит от сервисов web
+    depends_on:
+      - web
+    restart: unless-stopped
+
+  celery-beat:
+    build: .
+    command: celery -A config beat --loglevel=info
+    volumes:
+      - .:/app
+    env_file:
+      - .env
+    depends_on:
+      - redis
+      - db
+    restart: unless-stopped
+
+
+# объявляем тома для сохранения данных между перезапусками
+volumes:
+  postgres_data:
+  static_volume:
+  redis_data:
